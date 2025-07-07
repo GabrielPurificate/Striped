@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'my_drawer.dart'; // Importa o widget do Drawer
 
 class TelaPrincipal extends StatelessWidget {
   const TelaPrincipal({super.key});
@@ -9,14 +10,20 @@ class TelaPrincipal extends StatelessWidget {
     const Color primaryColor = Color(0xFF34D399);
 
     return Scaffold(
-      // 1. AppBar (Barra Superior) simplificada
+      drawer: const MyDrawer(currentPage: 'Início'),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black54),
-          onPressed: () {
-            // TODO: Implementar a lógica para abrir o Drawer (menu lateral)
+        // A SOLUÇÃO ESTÁ AQUI: Envolver o IconButton com um Builder
+        leading: Builder(
+          builder: (BuildContext builderContext) {
+            return IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black54),
+              onPressed: () {
+                // Usamos o novo 'builderContext' que está abaixo do Scaffold
+                Scaffold.of(builderContext).openDrawer();
+              },
+            );
           },
         ),
         actions: [
@@ -34,9 +41,8 @@ class TelaPrincipal extends StatelessWidget {
         ],
       ),
 
-      // O resto do corpo da tela continua igual...
+      // O corpo da tela continua o mesmo
       body: SingleChildScrollView(
-        // ... (código do corpo da tela sem alterações)
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
@@ -103,7 +109,7 @@ class TelaPrincipal extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               Image.asset(
-                'assets/logo.png',
+                'assets/logo.png', // Caminho da sua imagem
                 height: 150,
               ),
               const SizedBox(height: 20),
