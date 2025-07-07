@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'my_drawer.dart'; // Importa o widget do Drawer
+import 'criar_lista_modal.dart';
+import 'conta_modal.dart';
 
 class TelaPrincipal extends StatelessWidget {
   const TelaPrincipal({super.key});
@@ -34,7 +36,18 @@ class TelaPrincipal extends StatelessWidget {
               size: 28,
             ),
             onPressed: () {
-              // TODO: Implementar a lógica para a tela de perfil
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => DraggableScrollableSheet(
+                  expand: false,
+                  initialChildSize: 0.7,
+                  minChildSize: 0.5,
+                  maxChildSize: 0.9,
+                  builder: (_, __) => const ContaModal(),
+                ),
+              );
             },
           ),
           const SizedBox(width: 8),
@@ -72,10 +85,7 @@ class TelaPrincipal extends StatelessWidget {
               const Text(
                 'Gerar e compartilhar links para listas nunca foi tão fácil',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 40),
               Row(
@@ -84,7 +94,7 @@ class TelaPrincipal extends StatelessWidget {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: 'Digite um código ou link',
-                        prefixIcon: const Icon(Icons.list_alt_rounded),
+                        prefixIcon: const Icon(Icons.keyboard_alt_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
@@ -101,10 +111,10 @@ class TelaPrincipal extends StatelessWidget {
                       style: TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 40),
@@ -125,10 +135,7 @@ class TelaPrincipal extends StatelessWidget {
               const Text(
                 'Clique em Nova lista se quiser criar um link para enviar ao grupo',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
               const SizedBox(height: 50),
             ],
@@ -140,7 +147,18 @@ class TelaPrincipal extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: ElevatedButton.icon(
           onPressed: () {
-            // TODO: Implementar navegação para a tela de criação de lista
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.7,
+                minChildSize: 0.5,
+                maxChildSize: 0.9,
+                builder: (_, __) => CriarListaModal(),
+              ),
+            );
           },
           icon: const Icon(Icons.list_alt_rounded, color: Colors.white),
           label: const Text(

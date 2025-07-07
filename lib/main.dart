@@ -13,10 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Striped Lists',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Inter',
-      ),
+      theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Inter'),
       home: const TelaPrincipal(),
     );
   }
