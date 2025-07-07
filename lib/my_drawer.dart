@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'tela_historico.dart'; // Importa a tela de histórico
-import 'tela_principal.dart'; // Importa a tela principal
+import 'tela_listas.dart';
+import 'tela_principal.dart';
 
 class MyDrawer extends StatelessWidget {
   // Parâmetro para saber qual é a página atual
@@ -57,38 +57,19 @@ class MyDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ITEM "LISTAS" PREPARADO PARA O FUTURO
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: ListTile(
-              leading: const Icon(Icons.list_alt_rounded),
-              title: const Text('Listas'),
-              selected: currentPage == 'Listas', // Será usado quando a tela for criada
-              selectedTileColor: primaryColor.withOpacity(0.2),
-              selectedColor: primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              onTap: () {
-                // TODO: Criar e navegar para a TelaDeListas()
-                // Por enquanto, apenas fecha o menu
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-
           // ITEM "HISTÓRICO" (sem alterações na lógica)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('Histórico'),
-              selected: currentPage == 'Historico',
+              leading: const Icon(Icons.list),
+              title: const Text('Listas'),
+              selected: currentPage == 'Listas',
               selectedTileColor: primaryColor.withOpacity(0.2),
               selectedColor: primaryColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               onTap: () {
                 Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const TelaHistorico()),
+                  MaterialPageRoute(builder: (context) => const TelaListas()),
                 );
               },
             ),

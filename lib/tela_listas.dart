@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'my_drawer.dart'; // Importe o Drawer para reutilizar
 
-class TelaHistorico extends StatefulWidget {
-  const TelaHistorico({super.key});
+class TelaListas extends StatefulWidget {
+  const TelaListas({super.key});
 
   @override
-  State<TelaHistorico> createState() => _TelaHistoricoState();
+  State<TelaListas> createState() => _TelaListasState();
 }
 
-class _TelaHistoricoState extends State<TelaHistorico> {
+class _TelaListasState extends State<TelaListas> {
   // TODO: Futuramente, você irá carregar as listas do banco de dados aqui
   // e armazená-las em uma variável de estado, por exemplo:
   // List<MinhaLista> _listas = [];
@@ -20,7 +20,7 @@ class _TelaHistoricoState extends State<TelaHistorico> {
 
     return Scaffold(
       // Reutilizamos o mesmo Drawer da tela principal
-      drawer: const MyDrawer(currentPage: 'Historico'),
+      drawer: const MyDrawer(currentPage: 'Listas'),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
