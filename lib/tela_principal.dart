@@ -99,6 +99,15 @@ class TelaPrincipal extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: Colors.grey),
                         ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(
+                              0xFF34D399,
+                            ), // mesma cor do primaryColor
+                            width: 2,
+                          ),
+                        ),
                       ),
                     ),
                   ),

@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'link_gerado_modal.dart';
 
-class CriarListaModal extends StatelessWidget {
+class CriarListaModal extends StatefulWidget {
+  CriarListaModal({super.key});
+
+  @override
+  State<CriarListaModal> createState() => _CriarListaModalState();
+}
+
+class _CriarListaModalState extends State<CriarListaModal> {
   final TextEditingController tituloController = TextEditingController();
   final TextEditingController descricaoController = TextEditingController();
-
-  CriarListaModal({super.key});
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +23,7 @@ class CriarListaModal extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // ...imagem e close...
               Stack(
                 children: [
                   ClipRRect(
@@ -35,7 +43,7 @@ class CriarListaModal extends StatelessWidget {
                     right: 12,
                     child: CircleAvatar(
                       backgroundColor: Colors.white70,
-                      radius: 16, // menor
+                      radius: 16,
                       child: IconButton(
                         iconSize: 18,
                         icon: const Icon(Icons.close, color: Colors.black54),
@@ -54,54 +62,74 @@ class CriarListaModal extends StatelessWidget {
                   top: 0,
                   bottom: 32,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 24),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Criar lista',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 24),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Criar lista',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: tituloController,
-                      decoration: const InputDecoration(
-                        labelText: 'Título da lista',
-                        border: UnderlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: descricaoController,
-                      decoration: const InputDecoration(
-                        labelText: 'Descrição da lista (opcional)',
-                        border: UnderlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FloatingActionButton(
-                        backgroundColor: const Color(0xFF34D399),
-                        mini: false,
-                        onPressed: () {
-                          // TODO: Implementar ação de criar lista
-                          Navigator.of(context).pop();
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        key: const Key('tituloListaField'),
+                        controller: tituloController,
+                        decoration: const InputDecoration(
+                          labelText: 'Título da lista',
+                          border: UnderlineInputBorder(),
+                        ),
+                        autofillHints: const [AutofillHints.name],
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Preencha o título da lista';
+                          }
+                          return null;
                         },
-                        child: const Icon(
-                          Icons.arrow_forward,
-                          color: Colors.white,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: descricaoController,
+                        decoration: const InputDecoration(
+                          labelText: 'Descrição da lista (opcional)',
+                          border: UnderlineInputBorder(),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 32),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FloatingActionButton(
+                          backgroundColor: const Color(0xFF34D399),
+                          mini: false,
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              Navigator.of(context).pop();
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => LinkGeradoModal(
+                                  link: 'striped.vercel.app/fxt-tbor-kcw',
+                                ),
+                              );
+                            }
+                          },
+                          child: const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

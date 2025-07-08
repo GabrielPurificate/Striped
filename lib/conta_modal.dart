@@ -21,6 +21,8 @@ class _ContaModalState extends State<ContaModal> {
     'Outro',
   ];
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -50,7 +52,7 @@ class _ContaModalState extends State<ContaModal> {
                     right: 12,
                     child: CircleAvatar(
                       backgroundColor: Colors.white70,
-                      radius: 16, // menor
+                      radius: 16,
                       child: IconButton(
                         iconSize: 18,
                         icon: const Icon(Icons.close, color: Colors.black54),
@@ -69,91 +71,121 @@ class _ContaModalState extends State<ContaModal> {
                   top: 0,
                   bottom: 32,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 24),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Sua conta',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 24),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Sua conta',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: nomeController,
-                            decoration: const InputDecoration(
-                              labelText: 'Nome',
-                              border: UnderlineInputBorder(),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              key: const Key('nomeField'),
+                              controller: nomeController,
+                              decoration: const InputDecoration(
+                                labelText: 'Nome',
+                                border: UnderlineInputBorder(),
+                              ),
+                              autofillHints: const [AutofillHints.givenName],
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Preencha o nome';
+                                }
+                                return null;
+                              },
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextField(
-                            controller: sobrenomeController,
-                            decoration: const InputDecoration(
-                              labelText: 'Sobrenome',
-                              border: UnderlineInputBorder(),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              key: const Key('sobrenomeField'),
+                              controller: sobrenomeController,
+                              decoration: const InputDecoration(
+                                labelText: 'Sobrenome',
+                                border: UnderlineInputBorder(),
+                              ),
+                              autofillHints: const [AutofillHints.familyName],
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Preencha o sobrenome';
+                                }
+                                return null;
+                              },
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
+                        ],
                       ),
-                      child: DropdownButtonFormField<String>(
-                        value: faculdadeSelecionada,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.search),
-                          border: InputBorder.none,
-                          hintText: 'Faculdade',
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 16,
+                      const SizedBox(height: 24),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButtonFormField<String>(
+                          value: faculdadeSelecionada,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.search),
+                            border: InputBorder.none,
+                            hintText: 'Faculdade',
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
+                          ),
+                          items: faculdades.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value == 'Faculdade' ? null : value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              faculdadeSelecionada = value;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Selecione a faculdade';
+                            }
+                            return null;
+                          },
+                          hint: const Text('Faculdade'),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FloatingActionButton(
+                          backgroundColor: const Color(0xFF34D399),
+                          mini: false,
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              // TODO: Implementar ação de salvar conta
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Icon(
+                            Icons.save_alt,
+                            color: Colors.white,
                           ),
                         ),
-                        items: faculdades.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value == 'Faculdade' ? null : value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            faculdadeSelecionada = value;
-                          });
-                        },
-                        hint: const Text('Faculdade'),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FloatingActionButton(
-                        backgroundColor: const Color(0xFF34D399),
-                        mini: false,
-                        onPressed: () {
-                          // TODO: Implementar ação de salvar conta
-                          Navigator.of(context).pop();
-                        },
-                        child: const Icon(Icons.save_alt, color: Colors.white),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
