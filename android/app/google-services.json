@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "174572746168",
+    "project_id": "striped-29d5a",
+    "storage_bucket": "striped-29d5a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174572746168:android:fa925ce0d4bc7882a98b4d",
+        "android_client_info": {
+          "package_name": "com.example.striped"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAn8QSZrrZ4RiPL5a3Qi2HZKJ1UEDdeQWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

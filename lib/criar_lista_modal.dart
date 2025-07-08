@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:random_string/random_string.dart';
 import 'link_gerado_modal.dart';
 
 class CriarListaModal extends StatefulWidget {
-  CriarListaModal({super.key});
+  const CriarListaModal({super.key});
 
   @override
   State<CriarListaModal> createState() => _CriarListaModalState();
@@ -12,6 +15,82 @@ class _CriarListaModalState extends State<CriarListaModal> {
   final TextEditingController tituloController = TextEditingController();
   final TextEditingController descricaoController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  // Função para criar a lista no Firebase
+  Future<void> _criarLista() async {
+    // Valida o formulário
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Mostra o indicador de loading
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Pega o usuário atual (precisa estar logado, mesmo que anonimamente)
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception("Usuário não autenticado.");
+      }
+      
+      // Gera um código único e verifica se ele já existe no banco
+      String codigoLista;
+      DocumentSnapshot snapshot;
+      do {
+        // Gera um código aleatório no formato 'xxx-xxxx-xxx'
+        codigoLista = '${randomAlpha(3)}-${randomAlpha(4)}-${randomAlpha(3)}'.toLowerCase();
+        snapshot = await FirebaseFirestore.instance.collection('listas').doc(codigoLista).get();
+      } while (snapshot.exists);
+
+      // Prepara os dados para salvar no Firestore
+      final dadosDaLista = {
+        'titulo': tituloController.text,
+        'descricao': descricaoController.text,
+        'codigo': codigoLista,
+        'criadorId': user.uid,
+        'criadoEm': FieldValue.serverTimestamp(),
+        'participantes': {},
+        'membros': [user.uid],
+      };
+
+      // Salva o documento no Firestore usando o código como ID
+      await FirebaseFirestore.instance.collection('listas').doc(codigoLista).set(dadosDaLista);
+
+      // Fecha o modal de criação
+      if (mounted) Navigator.of(context).pop();
+
+      // Mostra o modal com o link/código gerado
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => LinkGeradoModal(
+            // ANTES: link: 'striped.vercel.app/$codigoLista',
+            // AGORA:
+            link: codigoLista, // Passando apenas o código
+          ),
+        );
+      }
+    } catch (e) {
+      // Em caso de erro, mostra uma mensagem
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao criar lista: ${e.toString()}')),
+        );
+      }
+    } finally {
+      // Esconde o indicador de loading
+      if(mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +102,7 @@ class _CriarListaModalState extends State<CriarListaModal> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ...imagem e close...
+              // ... (Stack com imagem e close button continua o mesmo) ...
               Stack(
                 children: [
                   ClipRRect(
@@ -67,6 +146,7 @@ class _CriarListaModalState extends State<CriarListaModal> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // ... (Resto do Form continua o mesmo) ...
                       const SizedBox(height: 24),
                       const Align(
                         alignment: Alignment.centerLeft,
@@ -109,23 +189,11 @@ class _CriarListaModalState extends State<CriarListaModal> {
                         child: FloatingActionButton(
                           backgroundColor: const Color(0xFF34D399),
                           mini: false,
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              Navigator.of(context).pop();
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (context) => LinkGeradoModal(
-                                  link: 'striped.vercel.app/fxt-tbor-kcw',
-                                ),
-                              );
-                            }
-                          },
-                          child: const Icon(
-                            Icons.arrow_forward,
-                            color: Colors.white,
-                          ),
+                          // Se estiver carregando, não faça nada. Senão, chame a função.
+                          onPressed: _isLoading ? null : _criarLista,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3,)
+                              : const Icon(Icons.arrow_forward, color: Colors.white),
                         ),
                       ),
                     ],

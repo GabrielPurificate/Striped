@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'tela_principal.dart';
 
 class ContaModal extends StatefulWidget {
   const ContaModal({super.key});
@@ -11,6 +15,7 @@ class _ContaModalState extends State<ContaModal> {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController sobrenomeController = TextEditingController();
   String? faculdadeSelecionada;
+  bool _isLoading = false; // Para controlar o estado de loading do botão
 
   final List<String> faculdades = [
     'Faculdade',
@@ -23,13 +28,68 @@ class _ContaModalState extends State<ContaModal> {
 
   final _formKey = GlobalKey<FormState>();
 
+  // Função para salvar os dados
+  Future<void> _salvarConta() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // 1. Pega o usuário anônimo que já foi logado no main.dart
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception("Usuário não encontrado. Tente reiniciar o app.");
+      }
+
+      final nomeCompleto = '${nomeController.text.trim()} ${sobrenomeController.text.trim()}';
+
+      // 2. Salva os dados no Firestore, na coleção 'usuarios', usando o uid como ID
+      await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).set({
+        'nome': nomeCompleto,
+        'faculdade': faculdadeSelecionada,
+        'uid': user.uid,
+      });
+
+      // 3. Salva no celular que a configuração da conta foi concluída
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isAccountSetup', true);
+
+      // 4. Navega para a TelaPrincipal e remove todas as telas anteriores da pilha
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const TelaPrincipal()),
+          (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao salvar dados: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // O build do seu widget continua praticamente o mesmo
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: Container(
         color: Colors.white,
         child: SingleChildScrollView(
+          // ... (O resto do seu código de UI continua aqui)
+          // A única mudança é no botão de salvar:
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -58,7 +118,10 @@ class _ContaModalState extends State<ContaModal> {
                         icon: const Icon(Icons.close, color: Colors.black54),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          // O usuário não deve poder fechar este modal
+                          // A navegação só acontece após salvar
+                        },
                       ),
                     ),
                   ),
@@ -172,16 +235,10 @@ class _ContaModalState extends State<ContaModal> {
                         child: FloatingActionButton(
                           backgroundColor: const Color(0xFF34D399),
                           mini: false,
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // TODO: Implementar ação de salvar conta
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          child: const Icon(
-                            Icons.save_alt,
-                            color: Colors.white,
-                          ),
+                          onPressed: _isLoading ? null : _salvarConta,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
+                              : const Icon(Icons.save_alt, color: Colors.white),
                         ),
                       ),
                     ],

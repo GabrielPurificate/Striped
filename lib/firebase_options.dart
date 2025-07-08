@@ -23,20 +23,14 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -50,20 +44,38 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "AIzaSyDPUTA16bPvky5tgy4NpL1sBA0h5c5cEBk",
-    authDomain: "striped-29d5a.firebaseapp.com",
-    projectId: "striped-29d5a",
-    storageBucket: "striped-29d5a.firebasestorage.app",
-    messagingSenderId: "174572746168",
-    appId: "1:174572746168:web:1a1448fae8c359eaa98b4d"
+    apiKey: 'AIzaSyDPUTA16bPvky5tgy4NpL1sBA0h5c5cEBk',
+    appId: '1:174572746168:web:1a1448fae8c359eaa98b4d',
+    messagingSenderId: '174572746168',
+    projectId: 'striped-29d5a',
+    authDomain: 'striped-29d5a.firebaseapp.com',
+    storageBucket: 'striped-29d5a.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: "AIzaSyDPUTA16bPvky5tgy4NpL1sBA0h5c5cEBk",
-    authDomain: "striped-29d5a.firebaseapp.com",
-    projectId: "striped-29d5a",
-    storageBucket: "striped-29d5a.firebasestorage.app",
-    messagingSenderId: "174572746168",
-    appId: "1:174572746168:web:1a1448fae8c359eaa98b4d"
+    apiKey: 'AIzaSyAn8QSZrrZ4RiPL5a3Qi2HZKJ1UEDdeQWI',
+    appId: '1:174572746168:android:fa925ce0d4bc7882a98b4d',
+    messagingSenderId: '174572746168',
+    projectId: 'striped-29d5a',
+    storageBucket: 'striped-29d5a.firebasestorage.app',
   );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCLBxLSIvGqzsS39BviqdRL5ZGwpDiTNKc',
+    appId: '1:174572746168:ios:ad4f1ae6499a6aa7a98b4d',
+    messagingSenderId: '174572746168',
+    projectId: 'striped-29d5a',
+    storageBucket: 'striped-29d5a.firebasestorage.app',
+    iosBundleId: 'com.example.striped',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDPUTA16bPvky5tgy4NpL1sBA0h5c5cEBk',
+    appId: '1:174572746168:web:9774e5b6fe3e1232a98b4d',
+    messagingSenderId: '174572746168',
+    projectId: 'striped-29d5a',
+    authDomain: 'striped-29d5a.firebaseapp.com',
+    storageBucket: 'striped-29d5a.firebasestorage.app',
+  );
+
 }

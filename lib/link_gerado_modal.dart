@@ -86,10 +86,12 @@ class LinkGeradoModal extends StatelessWidget {
                 backgroundColor: const Color(0xFF34D399),
                 mini: false,
                 onPressed: () {
-                  Share.share(
-                    'Confira este conteúdo incrível!',
-                    subject: 'Veja isso!',
-                  );
+                  // Monta uma mensagem mais amigável
+                  final textoCompartilhar = 'Use este código para entrar na minha lista no app Striped Lists: $link';
+                  
+                  // ANTES: Share.share('Confira este conteúdo incrível!', ...);
+                  // AGORA:
+                  Share.share(textoCompartilhar);
                   Navigator.of(context).pop();
                 },
                 child: const Icon(Icons.share, color: Colors.white),

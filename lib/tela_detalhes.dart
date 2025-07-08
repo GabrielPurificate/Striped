@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'my_drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class TelaListas extends StatefulWidget {
-  const TelaListas({super.key});
+// Não precisamos mais do Drawer aqui, pois a navegação agora é hierárquica (voltar)
+// import 'my_drawer.dart';
+
+class TelaDetalhes extends StatefulWidget {
+  // 1. RECEBENDO O ID DA LISTA
+  final String listId;
+  const TelaDetalhes({super.key, required this.listId});
 
   @override
-  State<TelaListas> createState() => _TelaListasState();
+  State<TelaDetalhes> createState() => _TelaDetalhesState();
 }
 
-class _TelaListasState extends State<TelaListas>
+class _TelaDetalhesState extends State<TelaDetalhes>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _selectedOptionIndex = 0;
+  final List<String> _opcoes = ['Ida e volta', 'Somente ida', 'Somente volta', 'Não vou'];
 
   @override
   void initState() {
@@ -25,78 +31,100 @@ class _TelaListasState extends State<TelaListas>
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF34D399);
+  // Função para salvar a opção do usuário no Firebase
+  Future<void> _salvarParticipacao(String status) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    // Primeiro, buscamos os dados do usuário (nome, faculdade) da coleção 'usuarios'
+    final usuarioDoc = await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).get();
+    final dadosUsuario = usuarioDoc.data();
+    if(dadosUsuario == null) return; // Não prossegue se não encontrar o perfil
 
-      // 1. ADICIONADO O DRAWER A ESTA TELA
-      drawer: const MyDrawer(currentPage: 'Listas'),
+    // Agora, atualizamos a lista com os dados do participante
+    // Usamos a notação de ponto para atualizar um campo dentro de um mapa
+    await FirebaseFirestore.instance.collection('listas').doc(widget.listId).update({
+      'participantes.${user.uid}': {
+        'nome': dadosUsuario['nome'],
+        'faculdade': dadosUsuario['faculdade'],
+        'status': status,
+        'uid': user.uid,
+      },
+      'membros': FieldValue.arrayUnion([user.uid]), // <-- ADICIONE ESTA LINHA
+    });
 
-      // 2. APPBAR ATUALIZADO PARA O PADRÃO
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        // Botão para abrir o menu
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.black54),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            );
-          },
-        ),
-        // Ações do lado direito (apenas o ícone de perfil)
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.account_circle_outlined,
-              color: primaryColor,
-              size: 28,
-            ),
-            onPressed: () {
-              // TODO: Lógica para a tela de perfil
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-        // Abas (Tabs)
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: primaryColor,
-          labelColor: primaryColor,
-          unselectedLabelColor: Colors.grey[600],
-          indicator: const UnderlineTabIndicator(
-            borderSide: BorderSide(width: 3.0, color: primaryColor),
-            insets: EdgeInsets.symmetric(horizontal: 16.0),
-          ),
-          tabs: const [
-            Tab(text: 'Informações'),
-            Tab(text: 'Lista'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildInformacoesTab(primaryColor),
-          _buildListaTab(primaryColor),
-        ],
-      ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sua presença foi confirmada!')),
     );
   }
 
-  Widget _buildInformacoesTab(Color primaryColor) {
+  @override
+  Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF34D399);
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    // 2. STREAMBUILDER PARA OUVIR A LISTA EM TEMPO REAL
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection('listas').doc(widget.listId).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Scaffold(body: Center(child: Text('Lista não encontrada.')));
+        }
+
+        final listaData = snapshot.data!.data() as Map<String, dynamic>;
+        final participantes = listaData['participantes'] as Map<String, dynamic>? ?? {};
+        
+        // Pega a opção atual do usuário logado, se existir
+        String? statusAtual = participantes[userId]?['status'];
+        int selectedIndex = statusAtual != null ? _opcoes.indexOf(statusAtual) : -1;
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: const BackButton(color: Colors.black), // Botão de voltar
+            title: Text(
+              listaData['titulo'] ?? 'Detalhes da Lista',
+              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: primaryColor,
+              labelColor: primaryColor,
+              unselectedLabelColor: Colors.grey[600],
+              indicator: const UnderlineTabIndicator(
+                borderSide: BorderSide(width: 3.0, color: primaryColor),
+                insets: EdgeInsets.symmetric(horizontal: 16.0),
+              ),
+              tabs: const [Tab(text: 'Informações'), Tab(text: 'Lista')],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildInformacoesTab(primaryColor, listaData, selectedIndex),
+              _buildListaTab(primaryColor, participantes),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 3. ABA "INFORMAÇÕES" DINÂMICA
+  Widget _buildInformacoesTab(Color primaryColor, Map<String, dynamic> listaData, int selectedIndex) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Lista ônibus 30/06/2025', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(listaData['titulo'] ?? 'Carregando...', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text('Lista de chamada de alunos para ônibus Itaperuna', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+          Text(listaData['descricao'] ?? '', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
           const SizedBox(height: 32),
           const Text('Selecione sua opção:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
           const SizedBox(height: 16),
@@ -107,22 +135,32 @@ class _TelaListasState extends State<TelaListas>
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
             childAspectRatio: 1.2,
-            children: [
-              _buildOptionCard(icon: Icons.swap_horiz_rounded, text: 'Ida e volta', index: 0, primaryColor: primaryColor),
-              _buildOptionCard(icon: Icons.arrow_forward_rounded, text: 'Somente ida', index: 1, primaryColor: primaryColor),
-              _buildOptionCard(icon: Icons.arrow_back_rounded, text: 'Somente volta', index: 2, primaryColor: primaryColor),
-              _buildOptionCard(icon: Icons.do_not_disturb_on_outlined, text: 'Não vou', index: 3, primaryColor: primaryColor),
-            ],
+            children: List.generate(_opcoes.length, (index) {
+              final icons = [Icons.swap_horiz_rounded, Icons.arrow_forward_rounded, Icons.arrow_back_rounded, Icons.do_not_disturb_on_outlined];
+              return _buildOptionCard(
+                icon: icons[index],
+                text: _opcoes[index],
+                isSelected: selectedIndex == index,
+                onTap: () {
+                  _salvarParticipacao(_opcoes[index]);
+                },
+                primaryColor: primaryColor,
+              );
+            }),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildListaTab(Color primaryColor) {
+  // 4. ABA "LISTA" DINÂMICA
+  Widget _buildListaTab(Color primaryColor, Map<String, dynamic> participantes) {
+    final listaDeParticipantes = participantes.values.toList();
+    
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Container(
+        // ... (o container e a barra de pesquisa continuam iguais)
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey[300]!),
@@ -130,46 +168,38 @@ class _TelaListasState extends State<TelaListas>
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Pesquise participantes',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey[400]!),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                    ),
-                  ),
+            // ... (barra de pesquisa)
+            if (listaDeParticipantes.isEmpty)
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.person_outline_rounded, size: 32, color: Colors.grey[400]),
+                    const SizedBox(height: 8),
+                    const Text('Nenhum participante ainda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () { },
-                  child: Text('Filtrar', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  itemCount: listaDeParticipantes.length,
+                  itemBuilder: (context, index) {
+                    final participante = listaDeParticipantes[index];
+                    return ListTile(
+                      title: Text(participante['nome'] ?? 'Nome não encontrado'),
+                      subtitle: Text(participante['status'] ?? ''),
+                      trailing: Text(participante['faculdade'] ?? ''),
+                    );
+                  },
                 ),
-              ],
-            ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person_outline_rounded, size: 32, color: Colors.grey[400]),
-                  Icon(Icons.list_alt_rounded, size: 24, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  const Text('Participante(s) não encontrado(s)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text('Não identificamos nenhum participante, certifique-se de alguém já ter entrado ou verifique o campo de pesquisa', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[600])),
-                ],
               ),
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.people_outline_rounded, color: Colors.grey[600]),
                 const SizedBox(width: 8),
-                Text('0 participantes', style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                Text('${listaDeParticipantes.length} participantes', style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500)),
               ],
             ),
           ],
@@ -178,14 +208,16 @@ class _TelaListasState extends State<TelaListas>
     );
   }
 
-  Widget _buildOptionCard({ required IconData icon, required String text, required int index, required Color primaryColor}) {
-    final bool isSelected = _selectedOptionIndex == index;
+  // Widget do cartão de opção, agora com callback onTap
+  Widget _buildOptionCard({
+    required IconData icon,
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color primaryColor,
+  }) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedOptionIndex = index;
-        });
-      },
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: isSelected ? primaryColor.withOpacity(0.1) : Colors.white,
