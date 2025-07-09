@@ -15,7 +15,7 @@ class _ContaModalState extends State<ContaModal> {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController sobrenomeController = TextEditingController();
   String? faculdadeSelecionada;
-  bool _isLoading = false; // Para controlar o estado de loading do botão
+  bool _isLoading = false;
 
   final List<String> faculdades = [
     'Faculdade',
@@ -28,7 +28,6 @@ class _ContaModalState extends State<ContaModal> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // Função para salvar os dados
   Future<void> _salvarConta() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -39,7 +38,6 @@ class _ContaModalState extends State<ContaModal> {
     });
 
     try {
-      // 1. Pega o usuário anônimo que já foi logado no main.dart
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception("Usuário não encontrado. Tente reiniciar o app.");
@@ -47,18 +45,15 @@ class _ContaModalState extends State<ContaModal> {
 
       final nomeCompleto = '${nomeController.text.trim()} ${sobrenomeController.text.trim()}';
 
-      // 2. Salva os dados no Firestore, na coleção 'usuarios', usando o uid como ID
       await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).set({
         'nome': nomeCompleto,
         'faculdade': faculdadeSelecionada,
         'uid': user.uid,
       });
 
-      // 3. Salva no celular que a configuração da conta foi concluída
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isAccountSetup', true);
 
-      // 4. Navega para a TelaPrincipal e remove todas as telas anteriores da pilha
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const TelaPrincipal()),
@@ -82,14 +77,11 @@ class _ContaModalState extends State<ContaModal> {
 
   @override
   Widget build(BuildContext context) {
-    // O build do seu widget continua praticamente o mesmo
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: Container(
         color: Colors.white,
         child: SingleChildScrollView(
-          // ... (O resto do seu código de UI continua aqui)
-          // A única mudança é no botão de salvar:
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -119,8 +111,7 @@ class _ContaModalState extends State<ContaModal> {
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         onPressed: () {
-                          // O usuário não deve poder fechar este modal
-                          // A navegação só acontece após salvar
+                          // usuario nao deve poder fechar o modal
                         },
                       ),
                     ),

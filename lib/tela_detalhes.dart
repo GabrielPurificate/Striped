@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// Não precisamos mais do Drawer aqui, pois a navegação agora é hierárquica (voltar)
-// import 'my_drawer.dart';
-
 class TelaDetalhes extends StatefulWidget {
-  // 1. RECEBENDO O ID DA LISTA
   final String listId;
   const TelaDetalhes({super.key, required this.listId});
 
@@ -31,18 +27,14 @@ class _TelaDetalhesState extends State<TelaDetalhes>
     super.dispose();
   }
 
-  // Função para salvar a opção do usuário no Firebase
   Future<void> _salvarParticipacao(String status) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // Primeiro, buscamos os dados do usuário (nome, faculdade) da coleção 'usuarios'
     final usuarioDoc = await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).get();
     final dadosUsuario = usuarioDoc.data();
-    if(dadosUsuario == null) return; // Não prossegue se não encontrar o perfil
+    if(dadosUsuario == null) return;
 
-    // Agora, atualizamos a lista com os dados do participante
-    // Usamos a notação de ponto para atualizar um campo dentro de um mapa
     await FirebaseFirestore.instance.collection('listas').doc(widget.listId).update({
       'participantes.${user.uid}': {
         'nome': dadosUsuario['nome'],
@@ -50,7 +42,7 @@ class _TelaDetalhesState extends State<TelaDetalhes>
         'status': status,
         'uid': user.uid,
       },
-      'membros': FieldValue.arrayUnion([user.uid]), // <-- ADICIONE ESTA LINHA
+      'membros': FieldValue.arrayUnion([user.uid]),
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -63,7 +55,6 @@ class _TelaDetalhesState extends State<TelaDetalhes>
     const Color primaryColor = Color(0xFF34D399);
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
-    // 2. STREAMBUILDER PARA OUVIR A LISTA EM TEMPO REAL
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('listas').doc(widget.listId).snapshots(),
       builder: (context, snapshot) {
@@ -77,7 +68,6 @@ class _TelaDetalhesState extends State<TelaDetalhes>
         final listaData = snapshot.data!.data() as Map<String, dynamic>;
         final participantes = listaData['participantes'] as Map<String, dynamic>? ?? {};
         
-        // Pega a opção atual do usuário logado, se existir
         String? statusAtual = participantes[userId]?['status'];
         int selectedIndex = statusAtual != null ? _opcoes.indexOf(statusAtual) : -1;
 
@@ -86,7 +76,7 @@ class _TelaDetalhesState extends State<TelaDetalhes>
           appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 0,
-            leading: const BackButton(color: Colors.black), // Botão de voltar
+            leading: const BackButton(color: Colors.black),
             title: Text(
               listaData['titulo'] ?? 'Detalhes da Lista',
               style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -115,7 +105,6 @@ class _TelaDetalhesState extends State<TelaDetalhes>
     );
   }
 
-  // 3. ABA "INFORMAÇÕES" DINÂMICA
   Widget _buildInformacoesTab(Color primaryColor, Map<String, dynamic> listaData, int selectedIndex) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
@@ -153,14 +142,12 @@ class _TelaDetalhesState extends State<TelaDetalhes>
     );
   }
 
-  // 4. ABA "LISTA" DINÂMICA
   Widget _buildListaTab(Color primaryColor, Map<String, dynamic> participantes) {
     final listaDeParticipantes = participantes.values.toList();
     
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Container(
-        // ... (o container e a barra de pesquisa continuam iguais)
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey[300]!),
@@ -168,7 +155,6 @@ class _TelaDetalhesState extends State<TelaDetalhes>
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // ... (barra de pesquisa)
             if (listaDeParticipantes.isEmpty)
               Expanded(
                 child: Column(
@@ -208,7 +194,6 @@ class _TelaDetalhesState extends State<TelaDetalhes>
     );
   }
 
-  // Widget do cartão de opção, agora com callback onTap
   Widget _buildOptionCard({
     required IconData icon,
     required String text,

@@ -3,7 +3,7 @@ import 'tela_listas.dart';
 import 'tela_principal.dart';
 
 class MyDrawer extends StatelessWidget {
-  // Parâmetro para saber qual é a página atual
+
   final String currentPage;
 
   const MyDrawer({
@@ -19,7 +19,6 @@ class MyDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // ... (O cabeçalho continua o mesmo)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 60, 10, 20),
             child: Row(
@@ -37,18 +36,16 @@ class MyDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // NOVO ITEM "INÍCIO"
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: ListTile(
               leading: const Icon(Icons.home_rounded),
               title: const Text('Início'),
-              selected: currentPage == 'Início', // Selecionado na tela principal
+              selected: currentPage == 'Início',
               selectedTileColor: primaryColor.withOpacity(0.2),
               selectedColor: primaryColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               onTap: () {
-                // Navega para a Tela Principal
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (context) => const TelaPrincipal()),
                 );
@@ -57,7 +54,6 @@ class MyDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ITEM "HISTÓRICO" (sem alterações na lógica)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: ListTile(

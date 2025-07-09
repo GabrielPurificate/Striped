@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'my_drawer.dart';
 import 'criar_lista_modal.dart';
 import 'conta_modal.dart';
-import 'tela_detalhes.dart'; // Importe a tela de detalhes
+import 'tela_detalhes.dart';
 
 class TelaPrincipal extends StatefulWidget {
   const TelaPrincipal({super.key});
@@ -16,7 +16,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
   final TextEditingController _codigoController = TextEditingController();
   bool _isLoading = false;
 
-  // Função para buscar a lista e participar
   Future<void> _participarDaLista() async {
     final codigo = _codigoController.text.trim();
     if (codigo.isEmpty) {
@@ -37,13 +36,11 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
       final doc = await FirebaseFirestore.instance.collection('listas').doc(codigo).get();
 
       if (doc.exists && mounted) {
-        // Se a lista foi encontrada, navega para a tela de detalhes
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => TelaDetalhes(listId: codigo)),
         );
       } else if (mounted) {
-        // Se a lista não foi encontrada
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Lista não encontrada. Verifique o código.'),
@@ -52,7 +49,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
         );
       }
     } catch (e) {
-      // Em caso de erro de rede ou outro problema
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -62,7 +58,6 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
         );
       }
     } finally {
-      // Garante que o estado de loading seja desativado ao final
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -133,7 +128,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                 children: [
                   Expanded(
                     child: TextField(
-                      controller: _codigoController, // Conectado ao controller
+                      controller: _codigoController,
                       decoration: InputDecoration(
                         hintText: 'Digite um código ou link',
                         prefixIcon: const Icon(Icons.keyboard_alt_outlined),
@@ -142,11 +137,10 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                       ),
                     ),
                   ),
-                  // Mostra um indicador de progresso ou o botão
                   _isLoading
                       ? const Padding(padding: EdgeInsets.symmetric(horizontal: 12.0), child: CircularProgressIndicator())
                       : TextButton(
-                          onPressed: _participarDaLista, // Chama a função aqui
+                          onPressed: _participarDaLista,
                           child: const Text('Participar', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 14)),
                         ),
                 ],

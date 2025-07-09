@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'my_drawer.dart';
-import 'tela_detalhes.dart'; // Importe a tela de detalhes
+import 'tela_detalhes.dart';
 
 class TelaListas extends StatelessWidget {
   const TelaListas({super.key});
@@ -12,7 +12,6 @@ class TelaListas extends StatelessWidget {
     return Scaffold(
       drawer: const MyDrawer(currentPage: 'Listas'),
       appBar: AppBar(
-        // ... (seu AppBar continua o mesmo)
         elevation: 0,
         backgroundColor: Colors.white,
         leading: Builder(
@@ -33,7 +32,6 @@ class TelaListas extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Campo de pesquisa
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: TextField(
@@ -46,18 +44,15 @@ class TelaListas extends StatelessWidget {
                 ),
               ),
               onChanged: (value) {
-                // TODO: Implementar a lógica de filtro
+                // fazer filtro
               },
             ),
           ),
 
-          // StreamBuilder para ouvir e construir a lista de cards
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-            // MUDE A PROPRIEDADE 'stream' PARA ISTO:
               stream: FirebaseFirestore.instance
                 .collection('listas')
-                // AQUI ESTÁ A MUDANÇA: "busque apenas as listas onde o array 'membros' contém o ID do usuário atual"
                 .where('membros', arrayContains: FirebaseAuth.instance.currentUser?.uid)
                 .orderBy('criadoEm', descending: true)
                 .snapshots(),
@@ -92,7 +87,6 @@ class TelaListas extends StatelessWidget {
   }
 }
 
-// WIDGET CUSTOMIZADO PARA O CARD DA LISTA, SEGUINDO O SEU DESIGN
 class _ListaCard extends StatelessWidget {
   final Map<String, dynamic> listaData;
   final String listaId;
@@ -103,7 +97,6 @@ class _ListaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF34D399);
     
-    // Pega os dados do mapa, com valores padrão para segurança
     final titulo = listaData['titulo'] ?? 'Título indisponível';
     final descricao = listaData['descricao'] ?? '';
     final codigo = listaData['codigo'] ?? 'código-indisponível';
@@ -119,13 +112,11 @@ class _ListaCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Título
             Text(
               titulo,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            // Descrição
             Text(
               descricao,
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
@@ -133,16 +124,13 @@ class _ListaCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            // Link
             Row(
               children: [
-                Icon(Icons.tag, size: 16, color: Colors.grey[600]), // Ícone de tag
+                Icon(Icons.tag, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    // ANTES: 'striped.vercel.app/$codigo',
-                    // AGORA:
-                    codigo, // Mostrando apenas o código
+                    codigo,
                     style: TextStyle(fontSize: 14, color: Colors.grey[800], letterSpacing: 1.2),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -152,7 +140,6 @@ class _ListaCard extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            // Botão e contagem de participantes
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
