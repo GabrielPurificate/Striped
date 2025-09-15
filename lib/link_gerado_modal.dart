@@ -32,19 +32,35 @@ class LinkGeradoModal extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Veja como participar a seguir',
+              'Pronto! Lista compartilhada',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Envie este link para quem participará da lista de presença. Recomendamos salvá-lo para usar mais tarde',
-              style: TextStyle(fontSize: 16, color: Colors.black54),
+            const SizedBox(height: 24),
+            Center(
+              child: Image.network(
+                'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=$link',
+                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 24),
+            const Text(
+              'Ou compartilhe o link:',
+              style: TextStyle(fontSize: 16, color: Colors.black54),
+            ),
+            const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
                 color: Colors.grey[100],
