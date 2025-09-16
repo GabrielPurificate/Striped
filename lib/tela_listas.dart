@@ -10,6 +10,7 @@ class TelaListas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       drawer: const MyDrawer(currentPage: 'Listas'),
       appBar: AppBar(
         elevation: 0,

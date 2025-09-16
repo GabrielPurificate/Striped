@@ -156,6 +156,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
           ),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: ElevatedButton.icon(
